@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>To-Do</title>
+  <style>
+    body { font-family: sans-serif; max-width: 400px; margin: 60px auto; padding: 0 20px; }
+    h1 { margin-bottom: 16px; }
+    .add-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    input[type="text"] { flex: 1; padding: 6px; font-size: 1rem; }
+    button { padding: 6px 14px; font-size: 1rem; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    li span { flex: 1; }
+    li.done span { text-decoration: line-through; color: #aaa; }
+    .del { background: none; border: none; color: #ccc; font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
+    .del:hover { color: red; }
+
+  </style>
+</head>
+<body>
+  <h1>To-Do</h1>
+  <div class="add-row">
+    <input id="inp" type="text" placeholder="New task…"/>
+    <button onclick="add()">Add</button>
+  </div>
+  <ul id="list"></ul>
+
+
+  <script>
+    const KEY = 'tasks';
+    const load = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const save = t => localStorage.setItem(KEY, JSON.stringify(t, null, 2));
+
+    function render() {
+      const tasks = load();
+      const ul = document.getElementById('list');
+      ul.innerHTML = tasks.length ? '' : '<li style="color:#aaa">No tasks yet.</li>';
+      tasks.forEach((t, i) => {
+        const li = document.createElement('li');
+        if (t.done) li.className = 'done';
+        li.innerHTML = `
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${i})"/>
+          <span>${t.text}</span>
+          <button class="del" onclick="remove(${i})">×</button>`;
+        ul.appendChild(li);
+      });
+    }
+
+    function add() {
+      const inp = document.getElementById('inp');
+      const text = inp.value.trim();
+      if (!text) return;
+      const tasks = load();
+      tasks.push({ text, done: false });
+      save(tasks); inp.value = ''; render();
+    }
+
+    function toggle(i) {
+      const tasks = load(); tasks[i].done = !tasks[i].done; save(tasks); render();
+    }
+
+    function remove(i) {
+      const tasks = load(); tasks.splice(i, 1); save(tasks); render();
+    }
+
+    document.getElementById('inp').addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+    render();
+  </script>
+</body>
+</html>
